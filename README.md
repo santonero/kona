@@ -136,7 +136,7 @@ RSpec.describe "Carts management", type: :system do
 
     context "as an anonymous user" do
       context "who has no cart" do
-        scenario "creates a new cart for the user and adds the product" do
+        scenario "creates a new cart and adds the product" do
           expect do
             add_to_cart product_A
           end.to change(Cart, :count).by(1).and change(LineItem, :count).by(1)
