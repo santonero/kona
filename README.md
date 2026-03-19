@@ -174,14 +174,14 @@ RSpec.describe "Carts management", type: :system do
       end
 
       context "who has a cart" do
-        let!(:cart) { add_to_cart(product_A); Cart.last }
+        before { add_to_cart product_A }
 
         scenario "adds the product to the cart" do
           expect do
             add_to_cart product_B
           end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
 
-          expect(cart.reload.products).to include(product_A, product_B)
+          expect(user.reload.cart.products).to include(product_A, product_B)
         end
       end
     end
