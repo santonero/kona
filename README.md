@@ -5,13 +5,9 @@
 
 It replaces the default "flaky" system tests with a rock-solid, high-performance stack centered around **Playwright**.
 
----
-
 ## 📜 The Philosophy
 
 Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** doctrine.
-
----
 
 ## ⚡ The Kona Stack
 
@@ -22,8 +18,6 @@ This template architects your Rails app for immediate BDD execution:
 *   **[Guard](https://github.com/guard/guard):** Instant feedback loop on file save.
 *   **FactoryBot:** Pre-wired for concise state setup.
 *   **Hybrid Driver:** A custom configuration allowing Capybara to boot the server while Playwright handles the browser logic directly.
-
----
 
 ## 🚀 Installation
 
@@ -39,8 +33,6 @@ To ensure Playwright can control the browsers:
 ```bash
 sudo ./node_modules/.bin/playwright install-deps
 ```
-
----
 
 ## 🎓 The Workflow in Action
 
@@ -189,7 +181,34 @@ RSpec.describe "Carts management", type: :system do
 end
 ```
 
----
+## 🏛️ The Architecture of Responsibility
+
+Kona enforces strict boundaries between the Web and your Business Domain. Refactoring is not about shrinking code; it is about clarifying responsibility.
+
+### I. The Controller is the Ferryman
+It stands at the boundary. It knows nothing of your business rules.
+*   **Its Role:** Translate the external protocol (HTTP) into identities (`current_user`, `params`), issue **a single command** to the Domain, and relay the outcome (HTML/JSON).
+*   **The Red Line:** A Controller that contains an `if` evaluating a business rule (e.g., checking stock levels) usurps the Domain.
+
+### II. The Model is the Domain Expert
+It is the sole incarnation of your business. It is autonomous and responsible for its own integrity.
+*   **Its Role:** Validate state, hide SQL complexity, and expose **behaviors** (Action Verbs) to mutate itself or its direct children.
+*   **The Red Line:** A Model that reads Web context (`session`, `cookies`) or formats data for the screen (Currencies, Dates) is corrupted.
+
+### III. The Law of "Tell, Don't Ask"
+Never pull an object's internal structure apart to do its work for it. Command it to act.
+
+**❌ Usurpation (The Controller does the work):**
+```ruby
+item = cart.line_items.find_or_initialize_by(product: product)
+item.increment(:quantity)
+item.save
+```
+
+**✅ Delegation (The Controller issues a command):**
+```ruby
+cart.add(product)
+```
 
 ## 🛠️ Developer Experience
 
