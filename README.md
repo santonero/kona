@@ -1,23 +1,7 @@
 # ⛈️ Kona
-> **Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
+**Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
 
-**Kona** is an opinionated Rails application template designed to enforce rigorous behavior-driven design principles. It creates an environment where **Intent** dictates implementation, and where tests serve as strict design contracts.
-
-It replaces the default "flaky" system tests with a rock-solid, high-performance stack centered around **Playwright**.
-
-## 📜 The Philosophy
-
-Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** doctrine.
-
-## ⚡ The Kona Stack
-
-This template architects your Rails app for immediate BDD execution:
-
-*   **[Playwright](https://playwright.dev/):** Replaces Selenium. Its superior auto-wait and semantic locators (`get_by_role`) ensure tests rely on user-facing behavior, not brittle CSS classes.
-*   **[RSpec](https://rspec.info/):** Configured for clean documentation output.
-*   **[Guard](https://github.com/guard/guard):** Instant feedback loop on file save.
-*   **FactoryBot:** Pre-wired for concise state setup.
-*   **Hybrid Driver:** A custom configuration allowing Capybara to boot the server while Playwright handles the browser logic directly.
+Kona is an opinionated Rails application template designed to enforce the BDD cycle as a rigorous standard for provable design. It creates an environment where Intent dictates implementation.
 
 ## 🚀 Installation
 
@@ -25,30 +9,49 @@ Start a new Rails project with the Kona workflow:
 
 ```bash
 rails new my_app -m https://raw.githubusercontent.com/santonero/kona/main/kona.rb
-```
-
-### Post-Install (One-time setup)
-To ensure Playwright can control the browsers:
-
-```bash
 sudo ./node_modules/.bin/playwright install-deps
 ```
 
-## 🎓 The Workflow in Action
+## ⚡ The Kona Stack
 
-To write a spec in Kona is to adhere to the **Grammar of Intent**. You must structure your specification through a strict hierarchy:
+Architected for immediate BDD execution and rock-solid reliability:
+
+*   **[Playwright](https://playwright.dev/):** Replaces Selenium. Its superior auto-wait and semantic locators (`get_by_role`) ensure tests rely on user-facing behavior, not brittle CSS classes.
+*   **[RSpec](https://rspec.info/):** Configured for clean documentation output.
+*   **[Guard](https://github.com/guard/guard):** Instant feedback loop on file save.
+*   **FactoryBot:** Pre-wired for concise state setup.
+*   **Hybrid Driver:** Capybara boots the server; Playwright handles the browser logic directly.
+
+## 📜 The Philosophy
+
+Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** doctrine.
+
+## 🌀 The Kona Cycle
+
+To build with Kona is to follow these four steps:
+
+**a.** Determine the next most important behavior.
+
+**b.** Describe it with an example, and watch it fail (**Red**).
+
+**c.** Write the simplest code to make the example pass (**Green**).
+
+**d.** **Refactor.**
+
+---
+
+## 🎓 Phase I: Evidence (Steps a, b, c)
+
+To satisfy steps **a** and **b**, adhere to the **Grammar of Intent**. Structure your specifications through a strict hierarchy:
 
 *   **Behavioral Domain** (`RSpec.describe`)
     *   **Behavioral Capacity** (`describe`)
         *   **Situation** (`context`)
             *   **Behavioral Example** (`scenario` / `it`)
 
-Here are the two patterns you must master.
-
 ### Pattern A: The Mutational Sync Anchor
-*The "Gold Standard" for testing Commands.*
 
-When testing a state mutation, we must ensure the action is complete before checking the database. **We do this by nesting the UI expectation INSIDE the change block.**
+Commands trigger asynchronous mutations. To prevent race conditions, we must anchor the test to a visible UI change before measuring the database. **We do this by nesting the UI expectation INSIDE the change block.**
 
 ```ruby
 # spec/system/products_spec.rb
@@ -101,9 +104,8 @@ end
 ```
 
 ### Pattern B: The Anchored Helper
-*Use this to abstract repetitive behaviors across multiple contexts.*
 
-If you extract a helper method, it **must** contain its own Sync Anchor. It must not return control until the UI has settled.
+When extracting a behavior into a helper method, the helper must take responsibility for its own asynchronous completion. **Never return control to the test until a visible UI confirmation has settled.**
 
 **The Helper:**
 ```ruby
@@ -181,9 +183,11 @@ RSpec.describe "Carts management", type: :system do
 end
 ```
 
-## 🏛️ The Architecture of Responsibility
+## 🏛️ Phase II: Responsibility (Step d)
 
-Kona enforces strict boundaries between the Web and your Business Domain. Refactoring is not about shrinking code; it is about clarifying responsibility.
+Once the evidence is **Green**, we fulfill the cycle's final command: **Refactor.**
+
+Refactoring is not about shrinking code; it is about clarifying responsibility. We enforce strict boundaries between the Web protocol and the Business Domain.
 
 ### I. The Controller is the Ferryman
 It stands at the boundary. It knows nothing of your business rules.
@@ -212,13 +216,8 @@ cart.add(product)
 
 ## 🛠️ Developer Experience
 
-### `bundle exec guard`
-Runs your tests automatically.
-*   Edit a Controller? -> Runs related Request & System specs.
-*   Edit a View? -> Runs related System specs.
-
-### Screenshot on Failure
-If a system test fails, a full-page screenshot is automatically saved to `tmp/playwright_screenshots`, capturing the exact state of the UI at the moment of failure.
+*   **`bundle exec guard`**: Instant feedback loop. Runs related specs on file save.
+*   **Screenshot on Failure**: System test failures automatically save a full-page screenshot to `tmp/playwright_screenshots`.
 
 ---
 

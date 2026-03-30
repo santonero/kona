@@ -157,7 +157,7 @@ after_bundle do
   append_to_file ".gitignore", "\n# Kona workflow artifacts\n/node_modules\n/tmp/playwright_screenshots\n"
 
   say "\n"
-  say "⛈️ " + set_color("Kona", :bold, :green)
+  say "⛈️  " + set_color("Kona", :bold, :green)
   say "   " + set_color("A Lean BDD Workflow for Rails", :white)
   say set_color("   " + "────────────────────────────────────────────────────────", :green)
   say "\n"
@@ -181,12 +181,12 @@ after_bundle do
   say "      " + set_color("$ bundle exec guard", :cyan)
   say "\n"
 
-  say "   " + set_color("3. Practice BDD: Red, Green, Refactor", :bold)
-  say "      " + set_color("a. Determine the next most important behaviour.", :white)
+  say "   " + set_color("3. The Kona Cycle", :bold)
+  say "      " + set_color("a. Determine the next most important behavior.", :white)
   say "      " + set_color("b. Describe it with an example, and watch it fail (Red).", :white)
   say "      " + set_color("c. Write the simplest code to make the example pass (Green).", :white)
-  say "      " + set_color("d. Refactor.", :white)
+  say "      " + set_color("d. Refactor (Clarify responsibility).", :white)
 
-  say "\n" + set_color("   Happy coding!", :bold, :green)
+  say "\n" + set_color("   Stay in the flow. Design by behavior.", :bold, :green)
   say "\n"
 end
