@@ -9,6 +9,12 @@ Start a new Rails project with the Kona workflow:
 
 ```bash
 rails new my_app -m https://raw.githubusercontent.com/santonero/kona/main/kona.rb
+```
+
+Enter your project and install the system dependencies required by Playwright (one-time setup):
+
+```bash
+cd my_app
 sudo ./node_modules/.bin/playwright install-deps
 ```
 

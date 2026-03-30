@@ -168,7 +168,7 @@ after_bundle do
 
   say "   " + set_color("1. Prepare Browsers (one-time setup)", :bold)
   say "      " + set_color("Installs the system dependencies required by Playwright.", :white)
-  say "      " + set_color("$ sudo ./node_modules/.bin/playwright install-deps", :cyan)
+  say "      " + set_color("$ cd #{app_name} && sudo ./node_modules/.bin/playwright install-deps", :cyan)
   say "\n"
   say "      " + set_color("💡 Tip for NVM users:", :yellow)
   say "      " + set_color("   If 'sudo' can't find 'node', run this:", :white)
