@@ -3,9 +3,9 @@
 </p>
 
 # ⛈️ Kona
-**Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
+> **Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
 
-Kona is an opinionated Rails application template designed to enforce the BDD cycle as a rigorous standard for provable design. It creates an environment where Intent dictates implementation.
+**Kona** is an opinionated Rails application template built to enforce this workflow. It elevates the BDD cycle into a rigorous standard for provable design, ensuring that **Intent** dictates implementation.
 
 ## 🚀 Installation
 
