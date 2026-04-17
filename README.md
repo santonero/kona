@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/konastorm.jpg" alt="Kona Storm Banner" width="100%">
+</p>
+
 # ⛈️ Kona
 **Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
 
