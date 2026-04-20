@@ -15,12 +15,13 @@ Fueled by this Intent, we begin the act of design. We set the stage for the beha
 
 **III. Behavior as a Holistic Response**
 
-A behavior is the Subject's complete response to the Scenario. This response is not a single outcome, but a set of observable consequences which may include:
-*   A visible communication (a return value or a UI update).
-*   A fundamental mutation of state.
-*   Interactions with other collaborating subjects.
+A behavior is the Subject's complete response to the Scenario. Depending on its intent, this response may manifest across multiple dimensions:
 
-Our primary duty is not merely to describe the visible surface of this response, but to specify and prove it **holistically**, ensuring that the visible outcome is a faithful reflection of the system's true state.
+*   A visible communication (a return value or a UI update).
+*   A fundamental mutation of state (a database record).
+*   Systemic interactions (a background job, an email).
+
+Our duty is not to merely verify the superficial outcome. To prove a behavior holistically is to guarantee that every dimension promised by the intent is irrevocably fulfilled, ensuring the visible result never masks an invalid system state.
 
 **IV. The Specification is the Design**
 
