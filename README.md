@@ -50,14 +50,18 @@ To build with Kona is to follow these four steps:
 
 ---
 
-## 🎓 Phase I: Evidence (Steps a, b, c)
+## ⚙️ The Workflow in Action
 
-To satisfy steps **a** and **b**, adhere to the **Grammar of Intent**. Structure your specifications through a strict hierarchy:
+To satisfy steps **a** and **b**, structure your specifications through this exact behavioral hierarchy:
 
-*   **Behavioral Domain** (`RSpec.describe`)
-    *   **Behavioral Capacity** (`describe`)
-        *   **Situation** (`context`)
-            *   **Behavioral Example** (`scenario` / `it`)
+<pre>
+<strong>Behavioral Domain</strong> (<code>RSpec.describe</code>)
+└── <strong>Behavioral Capacity</strong> (<code>describe</code>)
+    └── <strong>Situation</strong> (<code>context</code>)
+        └── <strong>Behavioral Example</strong> (<code>scenario</code> / <code>it</code>)
+</pre>
+
+Here are the two patterns you must master to achieve the **Red** and **Green** phases without flakiness.
 
 ### Pattern A: The Mutational Sync Anchor
 
@@ -193,9 +197,9 @@ RSpec.describe "Carts management", type: :system do
 end
 ```
 
-## 🏛️ Phase II: Responsibility (Step d)
+### The Final Step: Refactoring
 
-Once the evidence is **Green**, we fulfill the cycle's final command: **Refactor.**
+Once the evidence is **Green**, we fulfill the cycle's final command: **Refactor (Step d).**
 
 Refactoring is not about shrinking code; it is about clarifying responsibility. We enforce strict boundaries between the Web protocol and the Business Domain.
 
