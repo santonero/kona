@@ -187,6 +187,6 @@ after_bundle do
   say "      " + set_color("c. Write the simplest code to make the example pass (Green).", :white)
   say "      " + set_color("d. Refactor (Clarify responsibility).", :white)
 
-  say "\n" + set_color("   Stay in the flow. Design by behavior.", :bold, :green)
+  say "\n" + set_color("   Storm is coming. Stay in the flow. ⛈️", :bold, :green)
   say "\n"
 end

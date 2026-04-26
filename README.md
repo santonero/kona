@@ -235,7 +235,7 @@ cart.add(product)
 
 ---
 
-⛈️ **Happy coding! Stay in the flow and design by behavior.**
+**Storm is coming. Stay in the flow. ⛈️**
 
 ## License
 MIT
