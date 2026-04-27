@@ -54,18 +54,18 @@ To build with Kona is to follow these four steps:
 
 To satisfy steps **a** and **b**, structure your specifications through this exact behavioral hierarchy:
 
-<pre>
-<strong>Behavioral Domain</strong> (<code>RSpec.describe</code>)
-└── <strong>Behavioral Capacity</strong> (<code>describe</code>)
-    └── <strong>Situation</strong> (<code>context</code>)
-        └── <strong>Behavioral Example</strong> (<code>scenario</code> / <code>it</code>)
-</pre>
+```text
+Behavioral Domain (RSpec.describe)
+└── Behavioral Capacity (describe)
+    └── Situation (context)
+        └── Behavioral Example (scenario / it)
+```
 
-Here are the two patterns you must master to achieve the **Red** and **Green** phases without flakiness.
+Here is the single pattern you must master to achieve Red and Green without flakiness.
 
-### Pattern A: The Mutational Sync Anchor
+### The Mutational Sync Anchor
 
-Commands trigger asynchronous mutations. To prevent race conditions, we must anchor the test to a visible UI change before measuring the database. **We do this by nesting the UI expectation INSIDE the change block.**
+Commands trigger asynchronous mutations. To prevent race conditions, we anchor the test to a visible UI change before measuring the database. We do this by nesting the UI expectation inside the expect { } block.
 
 ```ruby
 # spec/system/products_spec.rb
@@ -117,23 +117,10 @@ RSpec.describe "Products management", type: :system do
 end
 ```
 
-### Pattern B: The Anchored Helper
+### Canonical Example: Comprehensive Cart Workflow
 
-When extracting a behavior into a helper method, the helper must take responsibility for its own asynchronous completion. **Never return control to the test until a visible UI confirmation has settled.**
+This spec demonstrates the full workflow in action—handling anonymous vs authenticated users, happy/sad paths, quantity increments, and strict async anchoring. Note how the sync anchor is applied consistently across all scenarios, helpers trigger only, and .reload bridges UI settlement with database truth.
 
-**The Helper:**
-```ruby
-# spec/support/system_spec_helpers.rb or similar
-def add_to_cart(product)
-  page.goto product_path(product)
-  page.get_by_role("button", name: "Add to Cart").click
-
-  # INTERNAL SYNC ANCHOR: Blocks until UI confirmation to prevent race conditions.
-  expect(page.get_by_text("Product was added to your cart successfully")).to be_visible
-end
-```
-
-**The Spec:**
 ```ruby
 # spec/system/carts_spec.rb
 
@@ -144,25 +131,67 @@ RSpec.describe "Carts management", type: :system do
 
     context "as an anonymous user" do
       context "who has no cart" do
-        scenario "creates a new cart and adds the product" do
-          expect do
-            add_to_cart product_A
-          end.to change(Cart, :count).by(1).and change(LineItem, :count).by(1)
+        context "when there is enough stock" do
+          scenario "creates a new cart and adds the product" do
+            expect do
+              add_to_cart product_A
+              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+            end.to change(Cart, :count).by(1).and change(LineItem, :count).by(1)
 
-          cart = Cart.last
-          expect(cart.products).to include(product_A)
+            cart = Cart.last
+            expect(cart.products).to include(product_A)
+          end
+        end
+
+        context "when there is not enough stock" do
+          let!(:product_A) { create(:product, name: "First product", quantity: 0) }
+
+          scenario "displays an error message" do
+            expect do
+              add_to_cart product_A
+              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_A.name} to add more")).to be_visible
+            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+          end
         end
       end
 
       context "who has a cart" do
-        let!(:cart) { add_to_cart(product_A); Cart.last }
+        let!(:cart) do
+          add_to_cart product_A
+          expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+          Cart.last
+        end
+        let(:item_A) { cart.line_items.find_by(product: product_A) }
 
-        scenario "adds the product to the cart" do
-          expect do
-            add_to_cart product_B
-          end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
+        context "when there is enough stock" do
+          scenario "adds the product to the cart" do
+            expect do
+              add_to_cart product_B
+              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+            end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
 
-          expect(cart.reload.products).to include(product_A, product_B)
+            expect(cart.products).to include(product_A, product_B)
+          end
+
+          context "with the same product already in" do
+            scenario "increases the quantity of the item by one" do
+              expect do
+                add_to_cart product_A
+                expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
+            end
+          end
+        end
+
+        context "when there is not enough stock" do
+          let!(:product_B) { create(:product, name: "Second Product", quantity: 0) }
+
+          scenario "displays an error message" do
+            expect do
+              add_to_cart product_B
+              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
+            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+          end
         end
       end
     end
@@ -172,30 +201,76 @@ RSpec.describe "Carts management", type: :system do
       before { login_as user }
 
       context "who has no cart" do
-        scenario "creates a new cart for the user and adds the product" do
-          expect do
-            add_to_cart product_A
-          end.to change { user.reload.cart }.from(nil).to(an_instance_of(Cart)).and change(LineItem, :count).by(1)
+        context "when there is enough stock" do
+          scenario "creates a new cart for the user and adds the product" do
+            expect do
+              add_to_cart product_A
+              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+            end.to change { user.reload.cart }.from(nil).to(an_instance_of(Cart)).and change(LineItem, :count).by(1)
 
-          expect(user.reload.cart.products).to include(product_A)
+            expect(user.reload.cart.products).to include(product_A)
+          end
+        end
+
+        context "when there is not enough stock" do
+          let!(:product_A) { create(:product, name: "First Product", quantity: 0) }
+
+          scenario "displays an error message" do
+            expect do
+              add_to_cart product_A
+              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_A.name} to add more")).to be_visible
+            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+          end
         end
       end
 
       context "who has a cart" do
-        before { add_to_cart product_A }
+        before do
+          add_to_cart product_A
+          expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+        end
+        let(:item_A) { user.cart.line_items.find_by(product: product_A) }
 
-        scenario "adds the product to the cart" do
-          expect do
-            add_to_cart product_B
-          end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
+        context "when there is enough stock" do
+          scenario "adds the product" do
+            expect do
+              add_to_cart product_B
+              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+            end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
 
-          expect(user.reload.cart.products).to include(product_A, product_B)
+            expect(user.reload.cart.products).to include(product_A, product_B)
+          end
+
+          context "with the same product already in" do
+            scenario "increases the quantity of the item by one" do
+              expect do
+                add_to_cart product_A
+                expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
+            end
+          end
+        end
+
+        context "when there is not enough stock" do
+          let!(:product_B) { create(:product, name: "Second Product", quantity: 0) }
+
+          scenario "displays an error message" do
+            expect do
+              add_to_cart product_B
+              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
+            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+          end
         end
       end
     end
   end
 end
 ```
+
+### Why this structure works
+* **Contextual repetition:** Anonymous and logged-in carts are different behavioral subjects. Each context gets its own explicit proof so failures diagnose instantly without tracing shared setup.
+* **`.reload` is mandatory:** Playwright syncs the UI, but RSpec matchers compare in-memory objects. .reload bridges async UI settlement with database truth. Removing it breaks the contract.
+* **Single-pattern discipline:** Helpers trigger only. All asynchronous completion lives inside the spec’s expect { } block, eliminating conditional assumptions and keeping every scenario self-contained.
 
 ### The Final Step: Refactoring
 
