@@ -156,11 +156,11 @@ RSpec.describe "Carts management", type: :system do
       end
 
       context "who has a cart" do
-        let!(:cart) do
+        before do
           add_to_cart product_A
           expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
-          Cart.last
         end
+        let(:cart) { Cart.last }
         let(:item_A) { cart.line_items.find_by(product: product_A) }
 
         context "when there is enough stock" do
