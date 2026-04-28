@@ -268,9 +268,9 @@ end
 ```
 
 ### Why this structure works
-* **Contextual repetition:** Anonymous and logged-in carts are different behavioral subjects. Each context gets its own explicit proof so failures diagnose instantly without tracing shared setup.
-* **`.reload` is mandatory:** Playwright syncs the UI, but RSpec matchers compare in-memory objects. .reload bridges async UI settlement with database truth. Removing it breaks the contract.
-* **Single-pattern discipline:** Helpers trigger only. All asynchronous completion lives inside the spec’s expect { } block, eliminating conditional assumptions and keeping every scenario self-contained.
+* **Contextual repetition enforces behavioral isolation.** Anonymous and authenticated carts follow different domain contracts. Each context contains its own explicit proof so failures diagnose instantly without tracing shared setup or hidden state. Repetition here isn’t duplication—it’s parallel specification for isolated intent.
+* **Single-pattern discipline enforces deterministic proof.** Helpers trigger only. All asynchronous settlement lives inside the spec’s `expect { }` block, eliminating conditional assumptions and keeping every scenario self-contained. The sync anchor is the sole mechanism; no configuration drift or hidden logic can obscure it.
+* **Purpose dictates proof.** Commands verify mutations (`change`) or safe rejections (`not_change`). Queries verify visible communication. The specification documents exactly what the system does, not how it renders. Every assertion is a pre-established contract; implementation exists solely to fulfill it.
 
 ### The Final Step: Refactoring
 
