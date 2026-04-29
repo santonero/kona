@@ -16,7 +16,7 @@ gem_group :test do
 end
 
 after_bundle do
-
+  remove_dir "test"
   generate "rspec:install"
 
   gsub_file "spec/spec_helper.rb", /^=begin$/, ""
@@ -29,7 +29,7 @@ after_bundle do
             "  # with RSpec, but feel free to customize to your heart's content."
   gsub_file "spec/spec_helper.rb",
             "  config.profile_examples = 10",
-            "  # config.profile_examples = 10 # Désactivé pour une sortie de test plus concise."
+            "  # config.profile_examples = 10 # Disabled for a more concise test output."
 
   gsub_file "spec/rails_helper.rb",
             "# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }",
@@ -157,36 +157,38 @@ after_bundle do
   append_to_file ".gitignore", "\n# Kona workflow artifacts\n/node_modules\n/tmp/playwright_screenshots\n"
 
   say "\n"
-  say "⛈️  " + set_color("Kona", :bold, :green)
-  say "   " + set_color("A Lean BDD Workflow for Rails", :white)
-  say set_color("   " + "────────────────────────────────────────────────────────", :green)
+  say set_color("⛈️  Kona", :bold, :green)
+  say set_color("   A Lean BDD Workflow for Rails", :white)
+  say set_color("   ────────────────────────────────────────────────────────", :green)
   say "\n"
 
-  say "   " + set_color("WHAT'S NEXT?", :yellow, :bold)
-  say "   " + set_color("────────────", :yellow)
+  say set_color("   WHAT'S NEXT?", :yellow, :bold)
+  say set_color("   ────────────", :yellow)
   say "\n"
 
-  say "   " + set_color("1. Prepare Browsers (one-time setup)", :bold)
-  say "      " + set_color("Installs the system dependencies required by Playwright.", :white)
-  say "      " + set_color("$ cd #{app_name} && sudo ./node_modules/.bin/playwright install-deps", :cyan)
-  say "\n"
-  say "      " + set_color("💡 Tip for NVM users:", :yellow)
-  say "      " + set_color("   If 'sudo' can't find 'node', run this:", :white)
-  say "      " + set_color("   $ sudo ln -s \"$(which node)\" /usr/local/bin/node", :cyan)
+  say set_color("   1. Prepare Browsers (one-time setup)", :bold)
+  say set_color("      Installs the system dependencies required by Playwright.", :white)
+  say set_color("      $ cd #{app_name} && sudo ./node_modules/.bin/playwright install-deps", :cyan)
   say "\n"
 
-  say "   " + set_color("2. Enter the Flow", :bold)
-  say "      " + set_color("Launch Guard for an instant feedback loop.", :white)
-  say "      " + set_color("It will run your specs automatically on every file save.", :white)
-  say "      " + set_color("$ bundle exec guard", :cyan)
+  say set_color("      💡 Tip for NVM users:", :yellow)
+  say set_color("         If 'sudo' can't find 'node', run this:", :white)
+  say set_color("         $ sudo ln -s \"$(which node)\" /usr/local/bin/node", :cyan)
   say "\n"
 
-  say "   " + set_color("3. The Kona Cycle", :bold)
-  say "      " + set_color("a. Determine the next most important behavior.", :white)
-  say "      " + set_color("b. Describe it with an example, and watch it fail (Red).", :white)
-  say "      " + set_color("c. Write the simplest code to make the example pass (Green).", :white)
-  say "      " + set_color("d. Refactor (Clarify responsibility).", :white)
+  say set_color("   2. Enter the Flow", :bold)
+  say set_color("      Launch Guard for an instant feedback loop.", :white)
+  say set_color("      It will run your specs automatically on every file save.", :white)
+  say set_color("      $ bundle exec guard", :cyan)
+  say "\n"
 
-  say "\n" + set_color("   Storm is coming. Stay in the flow. ⛈️", :bold, :green)
+  say set_color("   3. The Kona Cycle", :bold)
+  say set_color("      a. Determine the next most important behavior.", :white)
+  say set_color("      b. Describe it with an example, and watch it fail (Red).", :white)
+  say set_color("      c. Write the simplest code to make the example pass (Green).", :white)
+  say set_color("      d. Refactor (Clarify responsibility).", :white)
+  say "\n"
+
+  say set_color("   Storm is coming. Stay in the flow. ⛈️", :bold, :green)
   say "\n"
 end
