@@ -1,71 +1,60 @@
 <p align="center">
-  <img src=".github/assets/konastorm.jpg" alt="Kona Storm Banner" width="100%">
+  <img src=".github/assets/kona_sloth.png" alt="Kona Sloth Mascot" width="300" height="300">
 </p>
 
-# ⛈️ Kona
-> **Design by Behavior.** A Lean BDD Workflow for Ruby on Rails.
+<h1 align="center">⛈️ Kona</h1>
+<p align="center">
+  <b>Design by Behavior.</b> A Lean BDD Workflow for Ruby on Rails.
+</p>
 
-**Kona** is an opinionated Rails application template built to enforce this workflow. It elevates the BDD cycle into a rigorous standard for provable design, ensuring that **Intent** dictates implementation.
+**Kona** elevates the BDD cycle into a rigorous standard for provable design. It establishes an environment where **Intent** dictates implementation, demanding every behavior be deterministic and fully isolated.
 
-## 🚀 Installation
+## ⚙️ Bootstrap
 
-Start a new Rails project with the Kona workflow:
-
+Initialize the environment:
 ```bash
 rails new my_app -m https://raw.githubusercontent.com/santonero/kona/main/kona.rb
 ```
 
-Enter your project and install the system dependencies required by Playwright (one-time setup):
-
+Enter your project and install system dependencies (one-time setup):
 ```bash
-cd my_app
-sudo ./node_modules/.bin/playwright install-deps
+cd my_app && sudo ./node_modules/.bin/playwright install-deps
 ```
 
-## ⚡ The Kona Stack
+## 🧱 The Stack
 
-Architected for immediate BDD execution and rock-solid reliability:
-
-*   **[Playwright](https://playwright.dev/):** Replaces Selenium. Its superior auto-wait and semantic locators (`get_by_role`) ensure tests rely on user-facing behavior, not brittle CSS classes.
-*   **[RSpec](https://rspec.info/):** Configured for clean documentation output.
-*   **[Guard](https://github.com/guard/guard):** Instant feedback loop on file save.
-*   **FactoryBot:** Pre-wired for concise state setup.
-*   **Hybrid Driver:** Capybara boots the server; Playwright handles the browser logic directly.
-
-## 📜 The Philosophy
-
-Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** doctrine.
-
-## 🌀 The Kona Cycle
-
-To build with Kona is to follow these four steps:
-
-**a.** Determine the next most important behavior.
-
-**b.** Describe it with an example, and watch it fail (**Red**).
-
-**c.** Write the simplest code to make the example pass (**Green**).
-
-**d.** **Refactor.**
+*   **[Playwright](https://playwright.dev/):** Replaces Selenium. Semantic locators read human intent, not brittle CSS.
+*   **[RSpec](https://rspec.info/) & FactoryBot:** Configured for documentary output and concise state injection.
+*   **[Guard](https://github.com/guard/guard):** Instant, architecture-mapped feedback loop on file save.
+*   **Hybrid Driver:** Capybara boots the server; Playwright controls the browser.
 
 ---
 
-## ⚙️ The Workflow in Action
+## ☁️ The Doctrine
 
-To satisfy steps **a** and **b**, structure your specifications through this exact behavioral hierarchy:
+Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** manifesto. Its foundation rests on four unyielding steps:
+
+🧭 **1. Determine** the next most important behavior.<br>
+🔴 **2. Red:** Describe it with an example and watch it fail.<br>
+🟢 **3. Green:** Write the simplest code to make the example pass.<br>
+🛠️ **4. Refactor:** Improve the design without altering behavior.
+
+---
+
+## 🌩️ The Workflow in Action
+
+Specifications are contracts. They must map your domain through this exact behavioral hierarchy:
 
 ```text
-Behavioral Domain (RSpec.describe)
-└── Behavioral Capacity (describe)
+Domain (RSpec.describe)
+└── Capacity (describe)
     └── Situation (context)
-        └── Behavioral Example (scenario / it)
+        └── Example (scenario / it)
 ```
-
-Here is the single pattern you must master to achieve Red and Green without flakiness.
 
 ### The Mutational Sync Anchor
 
-Commands trigger asynchronous mutations. To prevent race conditions, we anchor the test to a visible UI change before measuring the database. We do this by nesting the UI expectation inside the expect { } block.
+[Commands](DESIGNING_BY_BEHAVIOR.md) trigger asynchronous state mutations. To guarantee the mutation has settled before verifying the database, we anchor the test to a visual confirmation. **Nest the UI expectation INSIDE the `expect { }` block.**
 
 ```ruby
 # spec/system/products_spec.rb
@@ -81,14 +70,14 @@ RSpec.describe "Products management", type: :system do
 
         # HOLISTIC PROOF: State Mutation + Visible Communication
         expect do
-          # 1. TRIGGER (The stimulus)
+          # 1. TRIGGER
           page.get_by_role("button", name: "Create Product").click
 
-          # 2. SYNC ANCHOR (Intermediate UI sync)
+          # 2. SYNC ANCHOR
           expect(page.get_by_role("heading", name: "A Nice Name")).to be_visible
-        end.to change(Product, :count).by(1) # 3. STATE LOCK (The mutation)
+        end.to change(Product, :count).by(1) # 3. STATE LOCK
 
-        # 4. VISIBLE PROOF (The full communication)
+        # 4. VISIBLE PROOF
         expect(page.get_by_text("Product was created successfully")).to be_visible
         expect(page.get_by_text("Quantity: 10")).to be_visible
       end
@@ -104,11 +93,11 @@ RSpec.describe "Products management", type: :system do
           # 1. TRIGGER
           page.get_by_role("button", name: "Create Product").click
 
-          # 2. SYNC ANCHOR (Error feedback)
+          # 2. SYNC ANCHOR
           expect(page.get_by_text("Name can't be blank")).to be_visible
-        end.not_to change(Product, :count) # 3. STATE LOCK (Negative)
+        end.not_to change(Product, :count) # 3. STATE LOCK
 
-        # 4. VISIBLE PROOF (Form state)
+        # 4. VISIBLE PROOF
         expect(page.get_by_label("Name")).to have_value("")
         expect(page.get_by_label("Quantity")).to have_value("10")
       end
@@ -117,9 +106,12 @@ RSpec.describe "Products management", type: :system do
 end
 ```
 
-### Canonical Example: Comprehensive Cart Workflow
+### The Canonical Workflow
+This specification proves that the doctrine scales to complex realities.
 
-This spec demonstrates the full workflow in action—handling anonymous vs authenticated users, happy/sad paths, quantity increments, and strict async anchoring. Note how the sync anchor is applied consistently across all scenarios, helpers trigger only, and .reload bridges UI settlement with database truth.
+*   **Absolute Isolation:** Anonymous and authenticated states follow distinct contracts. Repetition here is parallel specification. Explicit setup guarantees instant diagnosis.
+*   **Deterministic Proof:** There are no async race conditions. The visual settlement anchors the **`expect { }`** block, eradicating flaky tests by design.
+*   **Purpose Dictates Proof:** [Commands](DESIGNING_BY_BEHAVIOR.md) verify state mutations. [Queries](DESIGNING_BY_BEHAVIOR.md) verify visible outcomes. Every assertion demands irrefutable evidence.
 
 ```ruby
 # spec/system/carts_spec.rb
@@ -127,7 +119,7 @@ This spec demonstrates the full workflow in action—handling anonymous vs authe
 RSpec.describe "Carts management", type: :system do
   describe "Adding a product to the cart" do
     let!(:product_A) { create(:product, name: "First Product", quantity: 2) }
-    let!(:product_B) { create(:product, name: "Second Product", quantity: 2) }
+    let(:product_B) { create(:product, name: "Second Product", quantity: 2) }
 
     context "as an anonymous user" do
       context "who has no cart" do
@@ -144,7 +136,7 @@ RSpec.describe "Carts management", type: :system do
         end
 
         context "when there is not enough stock" do
-          let!(:product_A) { create(:product, name: "First product", quantity: 0) }
+          before { product_A.update!(quantity: 0) }
 
           scenario "displays an error message" do
             expect do
@@ -164,7 +156,7 @@ RSpec.describe "Carts management", type: :system do
         let(:item_A) { cart.line_items.find_by(product: product_A) }
 
         context "when there is enough stock" do
-          scenario "adds the product to the cart" do
+          scenario "adds the product" do
             expect do
               add_to_cart product_B
               expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
@@ -176,7 +168,7 @@ RSpec.describe "Carts management", type: :system do
           context "with the same product already in" do
             scenario "increases the quantity of the item by one" do
               expect do
-                add_to_cart product_A
+                page.get_by_role("button", name: "Add to Cart").click
                 expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
               end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
             end
@@ -184,7 +176,7 @@ RSpec.describe "Carts management", type: :system do
         end
 
         context "when there is not enough stock" do
-          let!(:product_B) { create(:product, name: "Second Product", quantity: 0) }
+          before { product_B.update!(quantity: 0) }
 
           scenario "displays an error message" do
             expect do
@@ -213,7 +205,7 @@ RSpec.describe "Carts management", type: :system do
         end
 
         context "when there is not enough stock" do
-          let!(:product_A) { create(:product, name: "First Product", quantity: 0) }
+          before { product_A.update!(quantity: 0) }
 
           scenario "displays an error message" do
             expect do
@@ -244,7 +236,7 @@ RSpec.describe "Carts management", type: :system do
           context "with the same product already in" do
             scenario "increases the quantity of the item by one" do
               expect do
-                add_to_cart product_A
+                page.get_by_role("button", name: "Add to Cart").click
                 expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
               end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
             end
@@ -252,7 +244,7 @@ RSpec.describe "Carts management", type: :system do
         end
 
         context "when there is not enough stock" do
-          let!(:product_B) { create(:product, name: "Second Product", quantity: 0) }
+          before { product_B.update!(quantity: 0) }
 
           scenario "displays an error message" do
             expect do
@@ -267,50 +259,28 @@ RSpec.describe "Carts management", type: :system do
 end
 ```
 
-### Why this structure works
-* **Contextual repetition enforces behavioral isolation.** Anonymous and authenticated carts follow different domain contracts. Each context contains its own explicit proof so failures diagnose instantly without tracing shared setup or hidden state. Repetition here isn’t duplication—it’s parallel specification for isolated intent.
-* **Single-pattern discipline enforces deterministic proof.** Helpers trigger only. All asynchronous settlement lives inside the spec’s `expect { }` block, eliminating conditional assumptions and keeping every scenario self-contained. The sync anchor is the sole mechanism; no configuration drift or hidden logic can obscure it.
-* **Purpose dictates proof.** Commands verify mutations (`change`) or safe rejections (`not_change`). Queries verify visible communication. The specification documents exactly what the system does, not how it renders. Every assertion is a pre-established contract; implementation exists solely to fulfill it.
+---
 
-### The Final Step: Refactoring
+## 📡 Developer Experience
 
-Once the evidence is **Green**, we fulfill the cycle's final command: **Refactor (Step d).**
-
-Refactoring is not about shrinking code; it is about clarifying responsibility. We enforce strict boundaries between the Web protocol and the Business Domain.
-
-### I. The Controller is the Ferryman
-It stands at the boundary. It knows nothing of your business rules.
-*   **Its Role:** Translate the external protocol (HTTP) into identities (`current_user`, `params`), issue **a single command** to the Domain, and relay the outcome (HTML/JSON).
-*   **The Red Line:** A Controller that contains an `if` evaluating a business rule (e.g., checking stock levels) usurps the Domain.
-
-### II. The Model is the Domain Expert
-It is the sole incarnation of your business. It is autonomous and responsible for its own integrity.
-*   **Its Role:** Validate state, hide SQL complexity, and expose **behaviors** (Action Verbs) to mutate itself or its direct children.
-*   **The Red Line:** A Model that reads Web context (`session`, `cookies`) or formats data for the screen (Currencies, Dates) is corrupted.
-
-### III. The Law of "Tell, Don't Ask"
-Never pull an object's internal structure apart to do its work for it. Command it to act.
-
-**❌ Usurpation (The Controller does the work):**
-```ruby
-item = cart.line_items.find_or_initialize_by(product: product)
-item.increment(:quantity)
-item.save
+**Continuous Feedback**
+```bash
+bundle exec guard
 ```
 
-**✅ Delegation (The Controller issues a command):**
-```ruby
-cart.add(product)
+**Live DOM Inspection**
+
+Prefix with `BROWSER=1` and drop `page.pause` in the spec to freeze execution and launch the Playwright inspector.
+```bash
+BROWSER=1 bundle exec rspec spec/system/carts_spec.rb
 ```
 
-## 🛠️ Developer Experience
+**Visual Evidence**
 
-*   **`bundle exec guard`**: Instant feedback loop. Runs related specs on file save.
-*   **Screenshot on Failure**: System test failures automatically save a full-page screenshot to `tmp/playwright_screenshots`.
+System test failures automatically save a full-page screenshot to `tmp/playwright_screenshots/`.
 
 ---
 
-**Storm is coming. Stay in the flow. ⛈️**
-
-## License
-MIT
+<p align="center">
+<b>Storm is coming. Stay in the flow. 🦥⛈️</b>
+</p>

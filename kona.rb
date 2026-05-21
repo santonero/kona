@@ -90,29 +90,55 @@ after_bundle do
     end
     Capybara.register_driver(:null) { CapybaraNullDriver.new }
 
+    # Share one browser instance across all tests
+    module PlaywrightBrowser
+      class << self
+        attr_reader :browser
+
+        def start!
+          @fiber = Fiber.new do
+            Playwright.create(playwright_cli_executable_path: './node_modules/.bin/playwright') do |playwright|
+              playwright.chromium.launch(headless: !ENV["BROWSER"]) do |browser|
+                Fiber.yield(browser)
+              end
+            end
+          end
+          @browser = @fiber.resume
+        end
+
+        def stop!
+          @fiber.resume if @fiber&.alive?
+        end
+      end
+    end
+
     RSpec.configure do |config|
       config.before(:suite) do
         FileUtils.mkdir_p("tmp/playwright_screenshots")
+        PlaywrightBrowser.start!
+      end
+
+      config.after(:suite) do
+        PlaywrightBrowser.stop!
       end
 
       config.around(:each, type: :system) do |example|
         Capybara.current_driver = :null
         base_url = Capybara.current_session.server.base_url
 
-        Playwright.create(playwright_cli_executable_path: "./node_modules/.bin/playwright") do |playwright|
-          playwright.chromium.launch(headless: !ENV["BROWSER"]) do |browser|
-            @playwright_page = browser.new_page(baseURL: base_url)
-            @playwright_page.set_default_timeout(2000)
-            example.run
-          end
+        PlaywrightBrowser.browser.new_context(baseURL: base_url) do |browser_context|
+          browser_context.enable_debug_console! if ENV["BROWSER"]
+          @playwright_page = browser_context.new_page
+          @playwright_page.set_default_timeout(2000)
+          example.run
         end
       end
 
       config.after(:each, type: :system) do |example|
         if example.exception
           timestamp = Time.now.strftime("%Y-%m-%d-%H-%M-%S")
-          sanitized_description = example.description.gsub(/[^a-zA-Z0-9]+/, "-")
-          path = "tmp/playwright_screenshots/error_#{sanitized_description}_#{timestamp}.png"
+          safe_name = example.full_description.gsub(/[^\w\s-]/, "")[0..60].strip.tr(" ", "_").presence || "failure"
+          path = "tmp/playwright_screenshots/error_#{safe_name}_#{timestamp}.png"
 
           if defined?(@playwright_page) && @playwright_page && !@playwright_page.closed?
             page.screenshot(path: path, fullPage: true)
@@ -128,24 +154,27 @@ after_bundle do
     end
   RUBY
 
-  create_file "Guardfile", <<~'RUBY'
-    guard :rspec, cmd: "bundle exec rspec --format doc" do
+create_file "Guardfile", <<~'RUBY'
+    guard :rspec, cmd: "bundle exec rspec --format progress" do
       require "guard/rspec/dsl"
       dsl = Guard::RSpec::Dsl.new(self)
 
       watch(%r{^spec/.+_spec\.rb$})
+
       watch("spec/spec_helper.rb")  { "spec" }
       watch("spec/rails_helper.rb") { "spec" }
 
       rails = dsl.rails
+
       watch(rails.controllers) do |m|
         [
           "spec/system/#{m[1]}_spec.rb",
           "spec/requests/#{m[1]}_spec.rb"
         ]
       end
+
       watch(rails.view_dirs) { |m| "spec/system/#{m[1]}_spec.rb" }
-      watch(%r{^spec/factories/(.+)\.rb$}) { "spec" }
+
       dsl.watch_spec_files_for(rails.app_files)
     end
   RUBY
@@ -183,12 +212,12 @@ after_bundle do
   say "\n"
 
   say set_color("   3. The Kona Cycle", :bold)
-  say set_color("      a. Determine the next most important behavior.", :white)
-  say set_color("      b. Describe it with an example, and watch it fail (Red).", :white)
-  say set_color("      c. Write the simplest code to make the example pass (Green).", :white)
-  say set_color("      d. Refactor (Clarify responsibility).", :white)
+  say "      1. " + set_color("Determine", :white, :bold) + " the next most important behavior."
+  say "      2. " + set_color("Red:", :red, :bold) + " Describe it with an example and watch it fail."
+  say "      3. " + set_color("Green:", :green, :bold) + " Write the simplest code to make the example pass."
+  say "      4. " + set_color("Refactor:", :cyan, :bold) + " Improve the design without altering behavior."
   say "\n"
 
-  say set_color("   Storm is coming. Stay in the flow. ⛈️", :bold, :green)
+  say set_color("   Storm is coming. Stay in the flow. 🦥⛈️", :bold, :green)
   say "\n"
 end
