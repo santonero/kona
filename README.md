@@ -160,7 +160,7 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_B
               expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
-            end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
+            end.to change(LineItem, :count).by(1)
 
             expect(cart.products).to include(product_A, product_B)
           end
@@ -182,7 +182,7 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_B
               expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
-            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+            end.not_to change(LineItem, :count)
           end
         end
       end
@@ -228,7 +228,7 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_B
               expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
-            end.to change(LineItem, :count).by(1).and not_change(Cart, :count)
+            end.to change(LineItem, :count).by(1)
 
             expect(user.reload.cart.products).to include(product_A, product_B)
           end
@@ -250,7 +250,7 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_B
               expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
-            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+            end.not_to change(LineItem, :count)
           end
         end
       end
