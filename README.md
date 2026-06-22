@@ -4,7 +4,7 @@
 
 <h1 align="center">⛈️ Kona</h1>
 <p align="center">
-  <b>Design by Behavior.</b> A Lean BDD Workflow for Ruby on Rails.
+  <b>Design by Behavior.</b> A BDD Workflow for Ruby on Rails.
 </p>
 
 **Kona** elevates the BDD cycle into a rigorous standard for provable design. It establishes an environment where **Intent** dictates implementation, demanding every behavior be deterministic and fully isolated.
