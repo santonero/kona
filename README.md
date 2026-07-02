@@ -127,7 +127,7 @@ RSpec.describe "Carts management", type: :system do
           scenario "creates a new cart and adds the product" do
             expect do
               add_to_cart product_A
-              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
             end.to change(Cart, :count).by(1).and change(LineItem, :count).by(1)
 
             cart = Cart.last
@@ -135,13 +135,13 @@ RSpec.describe "Carts management", type: :system do
           end
         end
 
-        context "when there is not enough stock" do
+        context "when the product is out of stock" do
           before { product_A.update!(quantity: 0) }
 
-          scenario "displays an error message" do
+          scenario "rejects the addition and warns the user" do
             expect do
               add_to_cart product_A
-              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_A.name} to add more")).to be_visible
+              expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_A.name} due to stock limits.")).to be_visible
             end.to not_change(Cart, :count).and not_change(LineItem, :count)
           end
         end
@@ -150,7 +150,7 @@ RSpec.describe "Carts management", type: :system do
       context "who has a cart" do
         before do
           add_to_cart product_A
-          expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+          expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
         end
         let(:cart) { Cart.last }
         let(:item_A) { cart.line_items.find_by(product: product_A) }
@@ -159,29 +159,29 @@ RSpec.describe "Carts management", type: :system do
           scenario "adds the product" do
             expect do
               add_to_cart product_B
-              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              expect(page.get_by_role("status").get_by_text("#{product_B.name} was added to your cart.")).to be_visible
             end.to change(LineItem, :count).by(1)
 
             expect(cart.products).to include(product_A, product_B)
           end
 
-          context "with the same product already in" do
+          context "when the product is already in the cart" do
             scenario "increases the quantity of the item by one" do
               expect do
                 page.get_by_role("button", name: "Add to Cart").click
-                expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+                expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
               end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
             end
           end
         end
 
-        context "when there is not enough stock" do
+        context "when the product is out of stock" do
           before { product_B.update!(quantity: 0) }
 
-          scenario "displays an error message" do
+          scenario "rejects the addition and warns the user" do
             expect do
               add_to_cart product_B
-              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
+              expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_B.name} due to stock limits.")).to be_visible
             end.not_to change(LineItem, :count)
           end
         end
@@ -197,20 +197,20 @@ RSpec.describe "Carts management", type: :system do
           scenario "creates a new cart for the user and adds the product" do
             expect do
               add_to_cart product_A
-              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
             end.to change { user.reload.cart }.from(nil).to(an_instance_of(Cart)).and change(LineItem, :count).by(1)
 
             expect(user.reload.cart.products).to include(product_A)
           end
         end
 
-        context "when there is not enough stock" do
+        context "when the product is out of stock" do
           before { product_A.update!(quantity: 0) }
 
-          scenario "displays an error message" do
+          scenario "rejects the addition and warns the user" do
             expect do
               add_to_cart product_A
-              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_A.name} to add more")).to be_visible
+              expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_A.name} due to stock limits.")).to be_visible
             end.to not_change(Cart, :count).and not_change(LineItem, :count)
           end
         end
@@ -219,7 +219,7 @@ RSpec.describe "Carts management", type: :system do
       context "who has a cart" do
         before do
           add_to_cart product_A
-          expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+          expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
         end
         let(:item_A) { user.cart.line_items.find_by(product: product_A) }
 
@@ -227,29 +227,29 @@ RSpec.describe "Carts management", type: :system do
           scenario "adds the product" do
             expect do
               add_to_cart product_B
-              expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+              expect(page.get_by_role("status").get_by_text("#{product_B.name} was added to your cart.")).to be_visible
             end.to change(LineItem, :count).by(1)
 
             expect(user.reload.cart.products).to include(product_A, product_B)
           end
 
-          context "with the same product already in" do
+          context "when the product is already in the cart" do
             scenario "increases the quantity of the item by one" do
               expect do
                 page.get_by_role("button", name: "Add to Cart").click
-                expect(page.get_by_role("status").get_by_text("Product was added to your cart successfully")).to be_visible
+                expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
               end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
             end
           end
         end
 
-        context "when there is not enough stock" do
+        context "when the product is out of stock" do
           before { product_B.update!(quantity: 0) }
 
-          scenario "displays an error message" do
+          scenario "rejects the addition and warns the user" do
             expect do
               add_to_cart product_B
-              expect(page.get_by_role("status").get_by_text("Sorry, there is not enough stock of #{product_B.name} to add more")).to be_visible
+              expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_B.name} due to stock limits.")).to be_visible
             end.not_to change(LineItem, :count)
           end
         end
