@@ -1,5 +1,5 @@
 # =============================================================================
-# Kona - A Lean BDD Workflow for Rails
+# Kona - A BDD Workflow for Rails
 # =============================================================================
 
 gsub_file "Gemfile", /gem "selenium-webdriver"/, "# gem \"selenium-webdriver\" # Replaced by Playwright for improved reliability."
@@ -187,7 +187,7 @@ create_file "Guardfile", <<~'RUBY'
 
   say "\n"
   say set_color("⛈️  Kona", :bold, :green)
-  say set_color("   A Lean BDD Workflow for Rails", :white)
+  say set_color("   A BDD Workflow for Rails", :white)
   say set_color("   ────────────────────────────────────────────────────────", :green)
   say "\n"
 
