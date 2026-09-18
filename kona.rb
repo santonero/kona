@@ -130,6 +130,13 @@ after_bundle do
           browser_context.enable_debug_console! if ENV["BROWSER"]
           @playwright_page = browser_context.new_page
           @playwright_page.set_default_timeout(2000)
+
+          unless ENV["BROWSER"]
+            @playwright_page.define_singleton_method(:pause) do
+              warn "\n\e[33m⚠️  [Kona DX] page.pause ignored in headless mode. Run with BROWSER=1 to inspect.\e[0m\n"
+            end
+          end
+
           example.run
         end
       end

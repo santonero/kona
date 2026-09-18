@@ -34,10 +34,13 @@ cd my_app && sudo ./node_modules/.bin/playwright install-deps
 
 Kona is the technical enforcement of the **[Designing by Behavior](DESIGNING_BY_BEHAVIOR.md)** manifesto. Its foundation rests on four unyielding steps:
 
-🧭 **1. Determine** the next most important behavior.<br>
-🔴 **2. Red:** Describe it with an example and watch it fail.<br>
-🟢 **3. Green:** Write the simplest code to make the example pass.<br>
-🛠️ **4. Refactor:** Improve the design without altering behavior.
+🧭 **Determine:** Identify the next most important behavior.
+
+🔴 **Red:** Describe it with an example and watch it fail.
+
+🟢 **Green:** Write the simplest code to make the example pass.
+
+🛠️ **Refactor:** Improve the design without altering behavior.
 
 ---
 
@@ -130,8 +133,7 @@ RSpec.describe "Carts management", type: :system do
               expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
             end.to change(Cart, :count).by(1).and change(LineItem, :count).by(1)
 
-            cart = Cart.last
-            expect(cart.products).to include(product_A)
+            expect(Cart.last.products).to include(product_A)
           end
         end
 
@@ -142,7 +144,7 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_A
               expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_A.name} due to stock limits.")).to be_visible
-            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+            end.not_to change(Cart, :count)
           end
         end
       end
@@ -152,6 +154,7 @@ RSpec.describe "Carts management", type: :system do
           add_to_cart product_A
           expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
         end
+
         let(:cart) { Cart.last }
         let(:item_A) { cart.line_items.find_by(product: product_A) }
 
@@ -190,9 +193,10 @@ RSpec.describe "Carts management", type: :system do
 
     context "as a logged-in user" do
       let!(:user) { create(:user) }
-      before { login_as user }
 
       context "who has no cart" do
+        before { login_as user }
+
         context "when there is enough stock" do
           scenario "creates a new cart for the user and adds the product" do
             expect do
@@ -200,7 +204,7 @@ RSpec.describe "Carts management", type: :system do
               expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
             end.to change { user.reload.cart }.from(nil).to(an_instance_of(Cart)).and change(LineItem, :count).by(1)
 
-            expect(user.reload.cart.products).to include(product_A)
+            expect(user.cart.products).to include(product_A)
           end
         end
 
@@ -211,17 +215,16 @@ RSpec.describe "Carts management", type: :system do
             expect do
               add_to_cart product_A
               expect(page.get_by_role("alert").get_by_text("Sorry, you cannot add more of #{product_A.name} due to stock limits.")).to be_visible
-            end.to not_change(Cart, :count).and not_change(LineItem, :count)
+            end.not_to change(Cart, :count)
           end
         end
       end
 
       context "who has a cart" do
-        before do
-          add_to_cart product_A
-          expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
-        end
-        let(:item_A) { user.cart.line_items.find_by(product: product_A) }
+        let!(:cart) { create(:cart, user: user) }
+        let!(:item_A) { create(:line_item, cart: cart, product: product_A, quantity: 1) }
+
+        before { login_as user }
 
         context "when there is enough stock" do
           scenario "adds the product" do
@@ -230,13 +233,13 @@ RSpec.describe "Carts management", type: :system do
               expect(page.get_by_role("status").get_by_text("#{product_B.name} was added to your cart.")).to be_visible
             end.to change(LineItem, :count).by(1)
 
-            expect(user.reload.cart.products).to include(product_A, product_B)
+            expect(cart.reload.products).to include(product_A, product_B)
           end
 
           context "when the product is already in the cart" do
             scenario "increases the quantity of the item by one" do
               expect do
-                page.get_by_role("button", name: "Add to Cart").click
+                add_to_cart product_A
                 expect(page.get_by_role("status").get_by_text("#{product_A.name} was added to your cart.")).to be_visible
               end.to change { item_A.reload.quantity }.by(1).and not_change(LineItem, :count)
             end
@@ -261,23 +264,29 @@ end
 
 ---
 
-## 📡 Developer Experience
+## ⚡ Developer Experience
 
 **Continuous Feedback**
+
+Run Guard in the background. It automatically runs your specs on every file save:
 ```bash
 bundle exec guard
 ```
 
-**Live DOM Inspection**
+**Debug in a Real Browser**
 
-Prefix with `BROWSER=1` and drop `page.pause` in the spec to freeze execution and launch the Playwright inspector.
+Need to see what's happening? Freeze the test and open the interactive Playwright browser:
+
+1. Add an `f` in front of your scenario (`fscenario`) to run only this test.
+2. Add `page.pause` where you want the browser to stop.
+3. In a separate terminal, launch the visual inspector:
 ```bash
-BROWSER=1 bundle exec rspec spec/system/carts_spec.rb
+BROWSER=1 bundle exec rspec
 ```
 
-**Visual Evidence**
+**Visual Failure Evidence**
 
-System test failures automatically save a full-page screenshot to `tmp/playwright_screenshots/`.
+When a system test fails, Playwright automatically saves a full-page screenshot to `tmp/playwright_screenshots/`.
 
 ---
 

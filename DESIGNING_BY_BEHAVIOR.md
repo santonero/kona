@@ -1,5 +1,7 @@
 ### **Designing by Behavior**
 
+> *"Code is merely the inert matter cast into the mold of behavior."*
+
 **Preamble**
 
 To design by behavior is to assert that software is not a collection of features, but an ensemble of responses. Our purpose is to articulate these responses before we implement them. Therefore, a behavior is not an aspiration, but the **complete and provable response of a subject to a scenario.**
